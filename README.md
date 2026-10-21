@@ -1,3 +1,5 @@
+[🇬🇧 English](README.md) | [🇹🇷 Türkçe](README.tr.md)
+
 # BookReads 📚
 
 BookReads is a Goodreads-inspired reading tracker with gamification features.
