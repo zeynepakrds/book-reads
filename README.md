@@ -8,7 +8,7 @@ This project is being developed by a team of seven students as part of the AI-Ba
 
 ## Project Goal
 
-Our goal is to build an application that encourages consistent reading habits by combining book tracking with XP, reading streaks, personal goals, and book quizzes.
+Our goal is to build a website that encourages consistent reading habits by combining book tracking with XP, reading streaks, personal goals, and book quizzes.
 
 ## Planned Features
 
