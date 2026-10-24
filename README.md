@@ -30,6 +30,7 @@ These features are planned and will be developed incrementally.
 | Frontend | React (under consideration) |
 | Database | PostgreSQL |
 | External API | Google Books API |
+| Frontend Tooling | Node.js + npm |
 | Testing | pytest and frontend testing tools |
 | Code Quality | SonarQube |
 | Collaboration | GitHub Issues, Pull Requests, GitHub Actions |
