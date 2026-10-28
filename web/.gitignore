@@ -1,0 +1,12 @@
+node_modules
+.next
+out
+.env
+.env.*
+!.env.example
+next-env.d.ts
+*.tsbuildinfo
+.DS_Store
+
+# Yerel veri dosyası (veritabanı yerine). İlk açılışta lib/data'dan oluşturulur.
+data/
