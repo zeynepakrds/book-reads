@@ -1,0 +1,234 @@
+@import "tailwindcss";
+
+/* `dark:` önekleri <html data-theme="dark"> olunca çalışsın. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ------------------------------------------------------------------
+   Renkler. Tüm renkler tek yerde, değişken olarak duruyor; tema değişince
+   sadece bu değerler değişir, bileşenler aynı sınıfları kullanmaya devam eder.
+   Açık tema: krem kâğıt, sıcak vurgular. Koyu tema: gece mavisi, yumuşak ışık.
+   ------------------------------------------------------------------ */
+:root {
+  color-scheme: light;
+  --paper: #fffaf3;
+  --wall: #f6eee3;
+  --card: #ffffff;
+  --ink: #26213f;
+  --ink-soft: #6a6483;
+  --line: #ece2d4;
+  --cobalt: #5b4cf0;
+  --cobalt-deep: #4334cf;
+  --link: #4a3bdc;
+  --gold: #ffbe3d;
+  --teal: #13a08f;
+  --rose: #e8436a;
+  --plum: #9b5cf6;
+  --tang: #ff8a3d;
+  --sky: #2f9fe0;
+  --arena: #1c1847;
+  --arena-soft: #2a2563;
+  --shelf: #4a3a2c;
+  --hero-from: #efe9ff;
+  --hero-to: #ffe8d9;
+  --page: #fffbf4;
+  --page-edge: #efe4d3;
+  --shadow: 38 33 63;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #13112a;
+  --wall: #1c1a3a;
+  --card: #1d1b3b;
+  --ink: #f2efff;
+  --ink-soft: #aaa5c8;
+  --line: #2e2a55;
+  --cobalt: #6c5ff7;
+  --cobalt-deep: #4b3fd0;
+  --link: #a99fff;
+  --gold: #ffc857;
+  --teal: #2fc0ad;
+  --rose: #ff6f8f;
+  --plum: #b48cff;
+  --tang: #ff9d5c;
+  --sky: #5ab8ef;
+  --arena: #0d0b24;
+  --arena-soft: #1f1b4d;
+  --shelf: #2a2147;
+  --hero-from: #231d55;
+  --hero-to: #2d1d45;
+  --page: #1e1b3e;
+  --page-edge: #2b2756;
+  --shadow: 0 0 0;
+}
+
+/* Betik çalışmazsa bile sistem tercihi uygulanır. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --paper: #13112a;
+    --wall: #1c1a3a;
+    --card: #1d1b3b;
+    --ink: #f2efff;
+    --ink-soft: #aaa5c8;
+    --line: #2e2a55;
+    --cobalt: #6c5ff7;
+    --cobalt-deep: #4b3fd0;
+    --link: #a99fff;
+    --arena: #0d0b24;
+    --arena-soft: #1f1b4d;
+    --shelf: #2a2147;
+    --hero-from: #231d55;
+    --hero-to: #2d1d45;
+    --page: #1e1b3e;
+    --page-edge: #2b2756;
+  }
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-wall: var(--wall);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-cobalt: var(--cobalt);
+  --color-cobalt-deep: var(--cobalt-deep);
+  --color-link: var(--link);
+  --color-gold: var(--gold);
+  --color-teal: var(--teal);
+  --color-rose: var(--rose);
+  --color-plum: var(--plum);
+  --color-tang: var(--tang);
+  --color-sky: var(--sky);
+  --color-arena: var(--arena);
+  --color-arena-soft: var(--arena-soft);
+  --color-shelf: var(--shelf);
+  --color-page: var(--page);
+  --color-page-edge: var(--page-edge);
+
+  /* Yazı tipleri layout.tsx içinde next/font ile yükleniyor. */
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-reading: var(--font-literata), Georgia, serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-paper text-ink font-display antialiased;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--cobalt);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  /* Koyu (arena) alanlarda odak halkası açık renk olsun. */
+  .on-dark :focus-visible {
+    outline-color: var(--gold);
+  }
+
+  ::selection {
+    background: var(--gold);
+    color: #26213f;
+  }
+
+  input,
+  textarea,
+  select {
+    color: inherit;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+/* ------------------------------------------------------------------
+   Animasyonlar. Sistemde "hareketi azalt" açıksa ya da Ayarlar'dan
+   animasyonlar azaltıldıysa hepsi durur.
+   ------------------------------------------------------------------ */
+@keyframes ayrac-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes ayrac-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+@keyframes ayrac-wave {
+  0%, 60%, 100% { transform: rotate(0deg); }
+  10% { transform: rotate(-24deg); }
+  20% { transform: rotate(6deg); }
+  30% { transform: rotate(-24deg); }
+  40% { transform: rotate(4deg); }
+}
+@keyframes ayrac-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+@keyframes ayrac-twinkle {
+  0%, 100% { transform: scale(0.55) rotate(0deg); opacity: 0.35; }
+  50% { transform: scale(1) rotate(25deg); opacity: 1; }
+}
+@keyframes ayrac-page-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes ayrac-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+@keyframes ayrac-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-8deg); }
+  75% { transform: rotate(8deg); }
+}
+
+@layer utilities {
+  .anim-float { animation: ayrac-float 5s ease-in-out infinite; transform-box: fill-box; }
+  .anim-bob { animation: ayrac-bob 3.4s ease-in-out infinite; }
+  .anim-wave { animation: ayrac-wave 3.8s ease-in-out infinite 1.2s; transform-box: fill-box; transform-origin: 0% 90%; }
+  .anim-blink { animation: ayrac-blink 4.6s infinite; transform-box: fill-box; transform-origin: center; }
+  .anim-twinkle { animation: ayrac-twinkle 2.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  .page-in { animation: ayrac-page-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .hover-wiggle:hover .wiggle-target { animation: ayrac-wiggle 0.5s ease-in-out; }
+  .anim-shake { animation: ayrac-shake 0.45s ease-in-out; }
+
+  .bg-hero {
+    background:
+      radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--gold) 22%, transparent) 0 120px, transparent 121px),
+      radial-gradient(circle at 92% 88%, color-mix(in srgb, var(--rose) 16%, transparent) 0 150px, transparent 151px),
+      linear-gradient(135deg, var(--hero-from), var(--hero-to));
+  }
+
+  .bg-dots {
+    background-image: radial-gradient(color-mix(in srgb, var(--ink) 9%, transparent) 1.2px, transparent 1.2px);
+    background-size: 18px 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-float, .anim-bob, .anim-wave, .anim-blink, .anim-twinkle, .anim-shake, .page-in, .hover-wiggle:hover .wiggle-target {
+    animation: none !important;
+  }
+}
+[data-motion="reduce"] :is(.anim-float, .anim-bob, .anim-wave, .anim-blink, .anim-twinkle, .anim-shake, .page-in, .wiggle-target) {
+  animation: none !important;
+}
+[data-motion="reduce"] {
+  scroll-behavior: auto;
+}
+
+/* Tema değişirken yumuşak geçiş (View Transitions destekleyen tarayıcılarda). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.35s;
+}
