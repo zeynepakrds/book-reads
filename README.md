@@ -50,6 +50,8 @@ The final platform and architecture will be decided by the team.
 
 The project is currently in its planning and initial setup phase.
 
+The web application lives in the [`web/`](web/) folder (Next.js). Run `npm install` and `npm run dev` **inside `web/`**; see [web/README.md](web/README.md).
+
 Architecture decisions, installation instructions, test results, and screenshots will be added as the project evolves.
 
 ## Course

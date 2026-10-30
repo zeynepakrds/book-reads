@@ -49,6 +49,8 @@ Son platform ve mimari kararları ekip tarafından verilecektir.
 
 Proje şu anda planlama ve ilk kurulum aşamasındadır.
 
+Web uygulaması [`web/`](web/) klasöründedir (Next.js). `npm install` ve `npm run dev` komutları **`web/` içinde** çalıştırılır; ayrıntı için [web/README.md](web/README.md).
+
 Mimari kararlar, kurulum yönergeleri, test sonuçları ve uygulama ekran görüntüleri proje geliştikçe eklenecektir.
 
 ## Ders

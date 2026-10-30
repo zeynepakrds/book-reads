@@ -6,9 +6,10 @@ Kitap özetleri, sohbetler, meydan okuma soruları, düello ve rozetlerle bir ok
 
 ## Çalıştırma
 
-Gereken: Node.js 18.18 veya üstü. Komutlar bu klasörde (`web/`) çalıştırılır.
+Gereken: Node.js 18.18 veya üstü (22 LTS önerilir). Komutlar **bu klasörde (`web/`)** çalıştırılır; repo kökünde `package.json` yoktur. Repoyu ZIP olarak indirdiyseniz önce açılan klasörün içindeki `web` klasörüne girin.
 
 ```bash
+cd web                               # repo kökündeyseniz
 npm install
 npm run admin:kur -- kullanici-adi   # yönetici hesabını kurar, güçlü bir şifre üretip ekrana yazar
 npm run dev
@@ -99,18 +100,18 @@ Veriler şimdilik `data/ayrac-db.json` dosyasında tutulur. Dosya ilk açılış
 
 ## Testler
 
-Uçtan uca testler gerçek HTTP istekleriyle siteyi dener: güvenlik başlıkları, kayıt ve giriş kuralları, hile denemeleri, yetki ayrımı, yönetim paneli ve kaba kuvvet koruması. **Son çalıştırma: 62 testin 62'si geçti.**
+Uçtan uca testler gerçek HTTP istekleriyle siteyi dener: güvenlik başlıkları, kayıt ve giriş kuralları, hile denemeleri, yetki ayrımı, yönetim paneli ve kaba kuvvet koruması. **Son çalıştırma: 63 testin 63'ü geçti.**
 
 ```bash
-# 1. terminal
-npm run dev
-# 2. terminal (PowerShell)
-$env:ADMIN_TEST_USER="kullanici-adi"; $env:ADMIN_TEST_PASS="sifre"; npm run test:e2e
+npm run test:e2e
 ```
 
-- Hız sınırları bellekte tutulduğu için testi **yeni başlatılmış** bir sunucuya karşı çalıştırın.
-- Test, oluşturduğu deneme üyelerini sonunda kendisi siler.
-- Son adımda kaba kuvvet korumasını denediği için admin girişi o bağlantı için 15 dakika kilitlenir. Sunucuyu yeniden başlatınca kilit açılır.
+Tek komut yeter; sunucuyu elle açmanız ve şifre girmeniz gerekmez. `tests/run-e2e.mjs` testi yalıtılmış bir ortamda çalıştırır:
+
+- Boş, geçici bir veri klasörü ve test için üretilmiş ayrı bir yönetici hesabı kullanılır. Gerçek `data/` klasörüne ve `.env.local` içindeki yöneticiye dokunulmaz.
+- Boş bir port ve ayrı derleme klasörü (`.next-e2e`) ile yeni bir sunucu açılır; `npm run dev` açıkken de çalışır. Hız sınırları her çalıştırmada sıfırdan başlar.
+- Test bitince sunucu kapatılır ve geçici klasör silinir. `tests/e2e.mjs` doğrudan çalıştırılırsa gerçek veriyi korumak için reddedilir.
+- Son adımda kaba kuvvet korumasını denediği için test sunucusunda admin girişi kilitlenir; bu yalnızca o geçici sunucuyu etkiler.
 
 Tip denetimi: `npm run typecheck`
 
