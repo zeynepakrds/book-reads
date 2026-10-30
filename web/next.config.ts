@@ -21,6 +21,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Test sunucusu, geliştirme sunucusunun derleme klasörüyle çakışmasın diye ayrı klasör kullanır.
+  ...(process.env.AYRAC_DIST_DIR ? { distDir: process.env.AYRAC_DIST_DIR } : {}),
   poweredByHeader: false,
   reactStrictMode: true,
   experimental: {

@@ -10,3 +10,6 @@ next-env.d.ts
 
 # Yerel veri dosyası (veritabanı yerine). İlk açılışta lib/data'dan oluşturulur.
 data/
+
+# E2E test sunucusunun derleme çıktısı
+.next-e2e

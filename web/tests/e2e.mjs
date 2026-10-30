@@ -1,22 +1,25 @@
 // Ayraç uçtan uca testleri: güvenlik, üyelik, quiz ve yönetim paneli.
 //
-// Çalıştırma (web/ klasöründe, ayrı bir terminalde `npm run dev` açıkken):
-//   ADMIN_TEST_USER=... ADMIN_TEST_PASS=... npm run test:e2e
-// PowerShell:
-//   $env:ADMIN_TEST_USER="..."; $env:ADMIN_TEST_PASS="..."; npm run test:e2e
+// Çalıştırma (web/ klasöründe, başka bir şey açmaya gerek yok):
+//   npm run test:e2e
 //
-// Notlar:
-// - Hız sınırları bellekte tutulduğu için testi YENİ BAŞLATILMIŞ bir sunucuya
-//   karşı çalıştırın (kayıt sınırı: saatte 10, admin giriş sınırı: 15 dakikada 5).
-// - Test, oluşturduğu deneme üyelerini sonunda yönetim panelinden siler.
-// - Son adım kaba kuvvet korumasını dener; bu yüzden admin girişi bu IP için
-//   15 dakika kilitlenir. Sunucuyu yeniden başlatınca kilit kalkar.
+// `tests/run-e2e.mjs` testi YALIN bir ortamda çalıştırır: boş geçici veri
+// klasörü, kendi test yöneticisi, boş bir port ve taze bir sunucu. Gerçek
+// `data/` klasörüne ve gerçek yönetici hesabına hiç dokunulmaz; hız sınırları
+// da her çalıştırmada sıfırdan başlar. Bu dosya doğrudan çalıştırılırsa
+// reddedilir (E2E_ISOLATED=1 yalnızca o betik tarafından verilir).
 
 import { readFileSync } from "node:fs";
 
 const BASE = process.env.BASE_URL ?? "http://localhost:3000";
 const ADMIN_USER = process.env.ADMIN_TEST_USER;
 const ADMIN_PASS = process.env.ADMIN_TEST_PASS;
+const DIST_DIR = process.env.AYRAC_DIST_DIR ?? ".next";
+
+if (process.env.E2E_ISOLATED !== "1") {
+  console.error("Bu test gerçek veriyi silebilir. `npm run test:e2e` ile çalıştırın (yalıtılmış ortam kurar).");
+  process.exit(2);
+}
 
 let pass = 0;
 let fail = 0;
@@ -28,7 +31,7 @@ const section = (title) => console.log(`\n— ${title} —`);
 
 // Sunucu eylemlerinin kimlikleri derleme çıktısından okunur (sayfalar açıldıkça dolar).
 function actionId(name) {
-  const file = new URL("../.next/server/server-reference-manifest.json", import.meta.url);
+  const file = new URL(`../${DIST_DIR}/server/server-reference-manifest.json`, import.meta.url);
   const manifest = JSON.parse(readFileSync(file, "utf8")).node;
   const found = Object.entries(manifest).find(([, v]) => v.exportedName === name);
   if (!found) throw new Error(`Sunucu eylemi bulunamadı: ${name} (ilgili sayfa henüz derlenmemiş olabilir)`);
@@ -202,7 +205,7 @@ ok((await callAction("startQuiz", ["simyaci", "tek"], jar)).includes('"needLogin
 section("Yönetim paneli");
 
 if (!ADMIN_USER || !ADMIN_PASS) {
-  console.log(`ATLANDI  ADMIN_TEST_USER / ADMIN_TEST_PASS verilmedi. Deneme üyesi (@${USER}) panelden elle silinmeli.`);
+  ok(false, "ADMIN_TEST_USER / ADMIN_TEST_PASS verilmedi; yönetim paneli testleri çalışamadı");
 } else {
   const anon = await postAction("deleteBookAction", "/yonetim/kitaplar", { slug: "1984" }, "");
   ok((await fetch(`${BASE}/kitaplar/1984`)).status === 200, `Oturumsuz kitap silme isteği işe yaramadı (yanıt ${anon})`);

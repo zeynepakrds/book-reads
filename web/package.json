@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test:e2e": "node tests/e2e.mjs",
+    "test:e2e": "node tests/run-e2e.mjs",
     "admin:kur": "node scripts/admin-kur.mjs"
   },
   "dependencies": {

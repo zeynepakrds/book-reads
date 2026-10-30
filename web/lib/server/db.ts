@@ -115,7 +115,8 @@ export type Data = {
   quizAttempts: QuizAttempt[];
 };
 
-const DATA_DIR = path.join(process.cwd(), "data");
+// AYRAC_DATA_DIR: testlerin gerçek veriye dokunmadan geçici bir klasörde çalışması için.
+const DATA_DIR = process.env.AYRAC_DATA_DIR ? path.resolve(process.env.AYRAC_DATA_DIR) : path.join(process.cwd(), "data");
 const FILE = path.join(DATA_DIR, "ayrac-db.json");
 
 type Global = typeof globalThis & {
