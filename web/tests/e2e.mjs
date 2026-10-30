@@ -227,18 +227,22 @@ if (!ADMIN_USER || !ADMIN_PASS) {
   const members = await (await fetch(`${BASE}/yonetim/uyeler`, { headers: { Cookie: admin } })).text();
   ok(!members.includes("scrypt:"), "Üyeler sayfasında şifre özeti yok");
 
-  // Temizlik: tablodaki "@test.okur..." satırlarının üye kimliklerini bul, panelden sil.
+  // Temizlik: SADECE bu çalıştırmanın açtığı deneme üyesini sil.
+  // Her satır kendi <tr>...</tr> sınırı içinde incelenir; sayfanın sonundaki
+  // veri betikleri ya da başka satırlar karıştırılmaz. Gerçek hesaplara dokunulmaz.
+  const rowsOf = (html) =>
+    [...html.matchAll(/<tr[\s>][\s\S]*?<\/tr>/g)].map((m) => m[0]);
   const testIds = new Set(
-    members
-      .split("<tr")
-      .slice(1)
-      .filter((row) => strip(row).includes("@test.okur"))
+    rowsOf(members)
+      .filter((row) => strip(row).includes(`@${USER}<`))
       .map((row) => (row.match(/name="id" value="(u-[0-9a-f]{12})"/) ?? [])[1])
       .filter(Boolean),
   );
+  ok(testIds.size === 1, `Silinecek hesap yalnızca bu testin açtığı hesap (${testIds.size})`);
+  const before = rowsOf(members).length;
   for (const id of testIds) await postAction("deleteUserAction", "/yonetim/uyeler", { id }, admin);
-  const after = strip(await (await fetch(`${BASE}/yonetim/uyeler`, { headers: { Cookie: admin } })).text());
-  ok(testIds.size > 0 && !after.includes("@test.okur"), `Deneme üyeleri panelden silindi (${testIds.size} hesap)`);
+  const afterHtml = await (await fetch(`${BASE}/yonetim/uyeler`, { headers: { Cookie: admin } })).text();
+  ok(!strip(afterHtml).includes(`@${USER}<`) && rowsOf(afterHtml).length === before - testIds.size, "Deneme üyesi silindi, diğer hesaplar yerinde");
 
   // Kaba kuvvet: farklı kullanıcı adıyla 7 hatalı deneme → engel
   let blocked = false;
