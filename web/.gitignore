@@ -9,7 +9,7 @@ next-env.d.ts
 .DS_Store
 
 # Yerel veri dosyası (veritabanı yerine). İlk açılışta lib/data'dan oluşturulur.
-data/
+/data/
 
 # E2E test sunucusunun derleme çıktısı
 .next-e2e
