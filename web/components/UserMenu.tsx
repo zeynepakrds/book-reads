@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ChevronDown, LogOut, Settings, UserRound } from "lucide-react";
+import { ChevronDown, LogOut, Settings, UserRound, Users } from "lucide-react";
 import { logoutUser } from "@/app/(auth)/actions";
 import { MyAvatar, MyName } from "@/components/MyAvatar";
 import { useSettings } from "@/components/SettingsProvider";
@@ -62,6 +62,7 @@ export function UserMenu() {
 
   const items = [
     { href: "/profil", label: "Profilim", Icon: UserRound },
+    { href: "/arkadaslar", label: "Arkadaşlarım", Icon: Users },
     { href: "/ayarlar", label: "Ayarlar", Icon: Settings },
   ];
 

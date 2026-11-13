@@ -328,6 +328,8 @@ export async function deleteUserAction(fd: FormData) {
     d.userSessions = d.userSessions.filter((s) => s.userId !== id);
     d.quizAttempts = d.quizAttempts.filter((a) => a.userId !== id);
     d.comments = d.comments.filter((c) => c.userId !== id);
+    d.friendships = d.friendships.filter((f) => f.userLowId !== id && f.userHighId !== id);
+    d.activity = d.activity.filter((x) => x.userId !== id);
     return u.username;
   });
   if (name) await audit("icerik", `Üye silindi (yorumlarıyla birlikte): @${name}`);

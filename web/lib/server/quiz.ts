@@ -114,6 +114,23 @@ export async function answerAttempt(userId: string, attemptId: string, questionI
           user.lastPlayedDay = today;
         }
 
+        // Arkadaşların görebileceği kısa okuma geçmişi (kişi başı son 20 kayıt).
+        d.activity.push({
+          id: newId("a"),
+          userId,
+          type: "quiz",
+          bookSlug: a.bookSlug,
+          correctCount: a.correctCount,
+          total: a.questionIds.length,
+          xpGained,
+          at: now,
+        });
+        const mine = d.activity.filter((x) => x.userId === userId);
+        if (mine.length > 20) {
+          const drop = new Set(mine.slice(0, mine.length - 20).map((x) => x.id));
+          d.activity = d.activity.filter((x) => !drop.has(x.id));
+        }
+
         const category = d.books.find((b) => b.slug === a.bookSlug)?.category;
         if (category && !user.categoriesPlayed.includes(category)) user.categoriesPlayed.push(category);
 

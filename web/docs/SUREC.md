@@ -116,6 +116,21 @@ Maskotun tepkileri:
   - **Sonuç: 62 testin 62'si geçti.**
 - **Repoya girmeyenler:** `.env.local` (şifre özeti), `data/` (üye verileri), `node_modules/` ve derleme çıktıları.
 
+## 7. Arkadaşlık sistemi
+
+**İstek:** Kullanıcılar birbirine arkadaşlık isteği gönderebilsin, kabul/ret edebilsin; arkadaş listesinde arkadaşların son okuma hareketi ve istatistikleri görünsün. (Sohbet sonraki adım olarak bırakıldı.)
+
+**Yapılan:**
+- **Veri:** `data/ayrac-db.json` sürüm 3'e geçti (`friendships`, `activity`). Eski dosyalar açılışta otomatik taşınır; üyeler ve yorumlar korunur.
+- **Her çift için tek kayıt:** Kayıt `userLowId < userHighId` biçiminde sıralı tutulur; A→B ve B→A iki ayrı kayıt olarak açılamaz. Karşılıklı istek otomatik kabul edilir.
+- **Yetki sunucuda:** İsteği yalnızca alan taraf kabul/ret edebilir, yalnızca gönderen geri çekebilir. Başkasının isteği için "bulunamadı" denir. Kimlik tarayıcıdan değil oturumdan alınır; tarayıcıya e-posta ve iç kimlik gitmez.
+- **Sınırlar:** Saatte 20 istek, en fazla 30 bekleyen istek, en fazla 200 arkadaş; arama ve işlemler hız sınırlı. Üye silinince arkadaşlık ve hareket kayıtları da silinir.
+- **Son hareket:** Quiz turu bitince kişi başına son 20 hareket saklanır (turlar zaten 1 gün sonra silindiği için ayrı kayıt gerekti).
+- **Arayüz:** `/arkadaslar` sayfası, menüye "Arkadaşlar" bağlantısı.
+- **Test:** `tests/e2e.mjs`'e 32 test eklendi (yetkisiz kabul, üçüncü kişi, karşılıklı istek, sızıntı kontrolü...). Toplam 94 testin 94'ü geçti.
+
+**Testte bulunan not:** Kök `layout.tsx` girişli üyenin kendi hesabını (kendi e-postası dahil) her sayfaya verir; bu eskiden beri böyleydi. Test, başkasının e-postasının sayfada olmadığını denetleyecek şekilde düzeltildi.
+
 ## Sıradaki adımlar
 
 Takım üyesinin seçtiği, sırasıyla yapılacak işler:
@@ -126,3 +141,4 @@ Takım üyesinin seçtiği, sırasıyla yapılacak işler:
 5. Sana özel kitap önerileri
 6. Günün sorusu ve günlük seri
 7. Gerçek zamanlı düello: iki gerçek oyuncu
+8. Arkadaşlar arasında birebir sohbet (mesajlaşma)

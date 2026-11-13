@@ -58,6 +58,10 @@ Yapay zekânın birlikte yazdığı commit'lerde `Co-Authored-By: Claude` satır
   - Açık, koyu ve sistem teması.
   - "Animasyonları azalt" seçeneği.
   - Avatar rengi ve simgesi.
+- **Arkadaşlar (`/arkadaslar`):**
+  - Kullanıcı adıyla okur arayıp arkadaşlık isteği gönderme; gelen isteği kabul etme veya reddetme; gönderilen isteği geri çekme.
+  - Arkadaş kartlarında seviye, haftalık XP, seri ve son bitirilen meydan okuma; "Son hareketler" akışı.
+  - Karşılıklı istek otomatik kabul edilir. Arkadaşlıktan çıkma onay ister.
 - **Yönetim paneli:** Kitap, soru, yorum ve üye yönetimi. Güvenlik kayıtları ve açık oturumlar.
 
 Ziyaretçiler siteyi gezip özetleri okuyabilir. **Meydan okuma, düello ve yorum için üyelik gerekir.**
@@ -69,6 +73,7 @@ app/
   (auth)/          Giriş ve üye ol ekranı (kitap + maskot); actions.ts: giriş/kayıt/çıkış
   (site)/          Herkese açık sayfalar (ana sayfa, kitaplar, meydan okuma, düello, sıralama, profil, ayarlar)
   yonetim/         Yönetim paneli; actions.ts: panel eylemleri (hepsi oturum kontrolü yapar)
+  (site)/arkadaslar/  Arkadaş sayfası ve eylemleri (istek, kabul, ret, geri çek, çıkar, ara)
   actions.ts       Quiz turu, yorum ve profil eylemleri (üye oturumu ister)
 components/        Arayüz bileşenleri (auth/: giriş ekranı, admin/: panel)
 lib/
@@ -100,7 +105,7 @@ Veriler şimdilik `data/ayrac-db.json` dosyasında tutulur. Dosya ilk açılış
 
 ## Testler
 
-Uçtan uca testler gerçek HTTP istekleriyle siteyi dener: güvenlik başlıkları, kayıt ve giriş kuralları, hile denemeleri, yetki ayrımı, yönetim paneli ve kaba kuvvet koruması. **Son çalıştırma: 63 testin 63'ü geçti.**
+Uçtan uca testler gerçek HTTP istekleriyle siteyi dener: güvenlik başlıkları, kayıt ve giriş kuralları, hile denemeleri, yetki ayrımı, yönetim paneli ve kaba kuvvet koruması. **Son çalıştırma: 94 testin 94'ü geçti** (arkadaşlık sistemi dahil).
 
 ```bash
 npm run test:e2e
