@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { BookOpen, LogIn, LogOut, Menu, Settings, Swords, Target, Trophy, UserRound, X } from "lucide-react";
+import { BookOpen, LogIn, LogOut, Menu, Settings, Swords, Target, Trophy, UserRound, Users, X } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { MyAvatar, MyName } from "@/components/MyAvatar";
 import { ThemeSegment, ThemeToggle } from "@/components/ThemeToggle";
@@ -17,6 +17,7 @@ const links = [
   { href: "/meydan-okuma", label: "Meydan okuma", Icon: Target, tone: "text-tang" },
   { href: "/duello", label: "Düello", Icon: Swords, tone: "text-rose" },
   { href: "/siralama", label: "Sıralama", Icon: Trophy, tone: "text-gold" },
+  { href: "/arkadaslar", label: "Arkadaşlar", Icon: Users, tone: "text-teal" },
 ];
 
 export function Navbar() {

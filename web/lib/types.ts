@@ -116,6 +116,62 @@ export type ClientAccount = {
   createdAt: number;
 };
 
+/** Arkadaşın son okuma hareketi (bitirilen meydan okuma). */
+export type FriendActivity = {
+  bookSlug: string;
+  bookTitle: string;
+  correctCount: number;
+  total: number;
+  xpGained: number;
+  /** ISO tarih. */
+  at: string;
+};
+
+/**
+ * Tarayıcıya giden arkadaş bilgisi. E-posta, iç kimlik (id) ve oturum bilgisi
+ * gibi gizli alanlar burada YOKTUR; işlemler arkadaşlık kaydının kimliğiyle yapılır.
+ */
+export type ClientFriend = {
+  friendshipId: string;
+  username: string;
+  displayName: string;
+  color: string;
+  icon: AvatarIcon;
+  xp: number;
+  weeklyXp: number;
+  streak: number;
+  quizzesCompleted: number;
+  badgeCount: number;
+  last: FriendActivity | null;
+};
+
+export type ClientFriendRequest = {
+  friendshipId: string;
+  username: string;
+  displayName: string;
+  color: string;
+  icon: AvatarIcon;
+  createdAt: string;
+};
+
+export type FriendFeedItem = FriendActivity & {
+  username: string;
+  displayName: string;
+  color: string;
+  icon: AvatarIcon;
+};
+
+/** Kullanıcı aramasında bir sonucun, benimle ilişkisi. */
+export type FriendRelation = "none" | "friend" | "sent" | "received";
+
+export type UserSearchHit = {
+  username: string;
+  displayName: string;
+  color: string;
+  icon: AvatarIcon;
+  relation: FriendRelation;
+};
+
 export type Comment = {
   id: string;
   bookSlug: string;

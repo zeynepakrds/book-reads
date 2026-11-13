@@ -87,7 +87,7 @@ const userJar = (setCookie) => (setCookie.match(/ayrac-oturum=[A-Za-z0-9_-]{43}/
 const adminJar = (setCookie) => (setCookie.match(/ayrac-yonetim=[A-Za-z0-9_-]{43}/) ?? [""])[0];
 
 // Sayfaları bir kez açarak derlenmelerini sağla.
-for (const p of ["/", "/giris", "/uye-ol", "/kitaplar/simyaci", "/meydan-okuma/simyaci", "/yonetim/giris"]) {
+for (const p of ["/", "/giris", "/uye-ol", "/kitaplar/simyaci", "/meydan-okuma/simyaci", "/arkadaslar", "/yonetim/giris"]) {
   await fetch(`${BASE}${p}`, { redirect: "manual" });
 }
 
@@ -198,6 +198,84 @@ ok((await callAction("updateProfile", [{ displayName: "Test Okur", icon: "panda"
 ok((await (await fetch(`${BASE}/kitaplar/simyaci`)).text()).includes("Test Okur"), "Eski yorum yeni görünen adla gösteriliyor");
 ok((await callAction("startQuiz", ["simyaci", "tek"], "ayrac-yonetim=" + "A".repeat(43))).includes('"needLogin":true'), "Yönetici çerezi üye yetkisi vermedi");
 
+/* ============================== Arkadaşlık ============================== */
+section("Arkadaşlık");
+
+const USER2 = `test.dost${RUN}`;
+const USER3 = `test.yabanci${RUN}`;
+const reg = async (name) => {
+  const x = await submitForm("/uye-ol", { kullanici: name, eposta: `${name.replace(/\./g, "")}@ornek.com`, sifre: PASS, kurallar: "on", sonra: "/" });
+  return userJar(x.cookie);
+};
+const jar2 = await reg(USER2);
+const jar3 = await reg(USER3);
+ok(Boolean(jar2) && Boolean(jar3), "İki ek deneme üyesi kaydedildi");
+
+const friendsHtml = async (cookie) => strip(await (await fetch(`${BASE}/arkadaslar`, { headers: { Cookie: cookie } })).text());
+const reqId = (html) => (html.match(/f-[0-9a-f]{12}/) ?? [])[0];
+
+const guestFriends = await fetch(`${BASE}/arkadaslar`, { redirect: "manual" });
+ok(guestFriends.status === 200 && (await guestFriends.text()).includes("Üye ol"), "Misafir arkadaşlar sayfasında giriş çağrısı görüyor");
+ok((await callAction("sendFriendRequest", [USER2])).includes('"needLogin":true'), "Misafir arkadaşlık isteği gönderemedi");
+ok((await callAction("searchReaders", [USER2.slice(0, 6)])).includes("giriş yapmalısın"), "Misafir kullanıcı arayamadı");
+
+ok((await callAction("sendFriendRequest", [USER], jar)).includes("Kendine"), "Kendine istek gönderilemedi");
+ok((await callAction("sendFriendRequest", ["olmayan.okur.x"], jar)).includes("bulunamadı"), "Olmayan kullanıcıya istek gönderilemedi");
+ok((await callAction("sendFriendRequest", ["../etc"], jar)).includes("Geçerli bir kullanıcı adı"), "Geçersiz kullanıcı adı reddedildi");
+
+// jar → USER2 isteği
+ok((await callAction("sendFriendRequest", [`@${USER2}`], jar)).includes('"ok":true'), "İstek gönderildi (@ önekiyle de çalışır)");
+ok((await callAction("sendFriendRequest", [USER2], jar)).includes("zaten bir istek"), "Aynı kişiye ikinci istek engellendi");
+
+const hit = await callAction("searchReaders", [USER2.slice(0, 8)], jar);
+ok(hit.includes(`"username":"${USER2}"`) && hit.includes('"relation":"sent"') && !hit.includes("@ornek.com"), "Arama sonucu ilişkiyi gösteriyor, e-posta sızdırmıyor");
+
+const inbox2 = await friendsHtml(jar2);
+ok(inbox2.includes("Gelen istekler") && inbox2.includes(`@${USER}`), "Alıcı, isteği 'Gelen istekler'de görüyor");
+// Not: kök layout, girişli üyenin KENDİ hesabını (kendi e-postası dahil) sayfaya verir. Önemli olan başkasınınkinin görünmemesi.
+ok(!inbox2.includes(EMAIL) && !inbox2.includes("scrypt:"), "Sayfada başkasının e-postası ya da şifre özeti yok");
+const fid = reqId(inbox2);
+ok(Boolean(fid), "Arkadaşlık kimliği sayfada var");
+
+// Yetkisiz işlemler
+ok((await callAction("respondFriendRequest", [fid, true], jar)).includes("İstek bulunamadı"), "İsteği gönderen kendi isteğini kabul edemedi");
+ok((await callAction("respondFriendRequest", [fid, true], jar3)).includes("İstek bulunamadı"), "Üçüncü kişi başkasının isteğini kabul edemedi");
+ok((await callAction("cancelFriendRequest", [fid], jar3)).includes("İstek bulunamadı"), "Üçüncü kişi başkasının isteğini geri çekemedi");
+ok((await callAction("respondFriendRequest", ["f-123", true], jar2)).includes("Geçersiz"), "Bozuk kimlik reddedildi");
+ok(!(await friendsHtml(jar3)).includes(`@${USER}`), "Üçüncü kişi, başkasının isteğini sayfasında görmüyor");
+
+// Reddet → kayıt silinir, yeniden istek gönderilebilir
+ok((await callAction("respondFriendRequest", [fid, false], jar2)).includes('"ok":true'), "Alıcı isteği reddetti");
+ok((await callAction("sendFriendRequest", [USER2], jar)).includes('"ok":true'), "Reddedilen istek sonrası yeniden istek gönderilebildi");
+
+// Geri çek
+const sentHtml = await friendsHtml(jar);
+ok(sentHtml.includes("Gönderilen istekler"), "Gönderen, isteği 'Gönderilen istekler'de görüyor");
+const fid2 = reqId(await friendsHtml(jar2));
+ok((await callAction("cancelFriendRequest", [fid2], jar)).includes('"ok":true'), "Gönderen isteği geri çekti");
+ok((await callAction("respondFriendRequest", [fid2, true], jar2)).includes("İstek bulunamadı"), "Geri çekilen istek kabul edilemedi");
+
+// Karşılıklı istek → otomatik kabul
+await callAction("sendFriendRequest", [USER2], jar);
+const auto = await callAction("sendFriendRequest", [USER], jar2);
+ok(auto.includes('"ok":true') && auto.includes("arkadaş oldunuz"), "Karşılıklı istek otomatik kabul edildi");
+ok((await callAction("sendFriendRequest", [USER2], jar)).includes("Zaten arkadaşsınız"), "Arkadaşa tekrar istek gönderilemedi");
+
+// Arkadaş istatistikleri ve son hareket (USER daha önce meydan okuma bitirmişti)
+const mine2 = await friendsHtml(jar2);
+ok(mine2.includes("Arkadaşlarım") && mine2.includes(`@${USER}`), "Arkadaş listede görünüyor");
+ok(mine2.includes("Simyacı") && mine2.includes("4/4 doğru"), "Arkadaşın son okuma hareketi (kitap, doğru sayısı) görünüyor");
+ok(!(await friendsHtml(jar3)).includes(`@${USER}`), "Arkadaş olmayan, başkasının arkadaş listesini göremiyor");
+
+// Arkadaşlıktan çıkar
+const friendId = reqId(mine2);
+ok((await callAction("removeFriendship", [friendId], jar3)).includes("bulunamadı"), "Üçüncü kişi başkasının arkadaşlığını silemedi");
+ok((await callAction("removeFriendship", [friendId], jar2)).includes('"ok":true'), "Arkadaşlıktan çıkıldı");
+ok(!(await friendsHtml(jar)).includes(`@${USER2}`), "Çıkarılan kişi iki tarafta da listeden kalktı");
+
+await callAction("logoutUser", [], jar2);
+await callAction("logoutUser", [], jar3);
+
 await callAction("logoutUser", [], jar);
 ok((await callAction("startQuiz", ["simyaci", "tek"], jar)).includes('"needLogin":true'), "Çıkıştan sonra eski üye çerezi geçersiz");
 
@@ -237,15 +315,15 @@ if (!ADMIN_USER || !ADMIN_PASS) {
     [...html.matchAll(/<tr[\s>][\s\S]*?<\/tr>/g)].map((m) => m[0]);
   const testIds = new Set(
     rowsOf(members)
-      .filter((row) => strip(row).includes(`@${USER}<`))
+      .filter((row) => [USER, USER2, USER3].some((n) => strip(row).includes(`@${n}<`)))
       .map((row) => (row.match(/name="id" value="(u-[0-9a-f]{12})"/) ?? [])[1])
       .filter(Boolean),
   );
-  ok(testIds.size === 1, `Silinecek hesap yalnızca bu testin açtığı hesap (${testIds.size})`);
+  ok(testIds.size === 3, `Silinecek hesaplar yalnızca bu testin açtığı hesaplar (${testIds.size})`);
   const before = rowsOf(members).length;
   for (const id of testIds) await postAction("deleteUserAction", "/yonetim/uyeler", { id }, admin);
   const afterHtml = await (await fetch(`${BASE}/yonetim/uyeler`, { headers: { Cookie: admin } })).text();
-  ok(!strip(afterHtml).includes(`@${USER}<`) && rowsOf(afterHtml).length === before - testIds.size, "Deneme üyesi silindi, diğer hesaplar yerinde");
+  ok(![USER, USER2, USER3].some((n) => strip(afterHtml).includes(`@${n}<`)) && rowsOf(afterHtml).length === before - testIds.size, "Deneme üyeleri silindi, diğer hesaplar yerinde");
 
   // Kaba kuvvet: farklı kullanıcı adıyla 7 hatalı deneme → engel
   let blocked = false;

@@ -103,8 +103,36 @@ export type QuizAttempt = {
   finishedAt: number | null;
 };
 
+/**
+ * Arkadaşlık kaydı. Her çift için tek kayıt vardır: `userLowId` her zaman
+ * `userHighId`'den küçüktür (sıralı çift), böylece A→B ve B→A iki ayrı kayıt
+ * olarak açılamaz. Reddedilen istek ve silinen arkadaşlık kaydı da silinir.
+ */
+export type Friendship = {
+  id: string;
+  userLowId: string;
+  userHighId: string;
+  /** İsteği gönderen (ikisinden biri). Kabul/ret yalnızca diğer taraf yapabilir. */
+  requesterId: string;
+  status: "pending" | "accepted";
+  createdAt: number;
+  respondedAt: number | null;
+};
+
+/** Arkadaşlara gösterilen kısa okuma geçmişi (bitirilen meydan okumalar). */
+export type ActivityEntry = {
+  id: string;
+  userId: string;
+  type: "quiz";
+  bookSlug: string;
+  correctCount: number;
+  total: number;
+  xpGained: number;
+  at: number;
+};
+
 export type Data = {
-  version: 2;
+  version: 3;
   books: Book[];
   questions: StoredQuestion[];
   comments: StoredComment[];
@@ -113,6 +141,8 @@ export type Data = {
   users: StoredUser[];
   userSessions: UserSession[];
   quizAttempts: QuizAttempt[];
+  friendships: Friendship[];
+  activity: ActivityEntry[];
 };
 
 // AYRAC_DATA_DIR: testlerin gerçek veriye dokunmadan geçici bir klasörde çalışması için.
@@ -128,7 +158,7 @@ const g = globalThis as Global;
 function buildSeed(): Data {
   const now = Date.now();
   return {
-    version: 2,
+    version: 3,
     books: structuredClone(seedBooks),
     questions: seedQuestions.map((q) => {
       const a = seedAnswers[q.id];
@@ -143,23 +173,33 @@ function buildSeed(): Data {
     users: [],
     userSessions: [],
     quizAttempts: [],
+    friendships: [],
+    activity: [],
   };
 }
 
 /** Eski sürüm dosyaları yeni biçime taşır. Veri kaybı olmaz, sadece eksik alanlar eklenir. */
 function migrate(value: unknown): { data: unknown; changed: boolean } {
-  const d = value as Record<string, unknown> | null;
+  let d = value as Record<string, unknown> | null;
+  let changed = false;
   if (d && d.version === 1) {
-    return { data: { ...d, version: 2, users: [], userSessions: [], quizAttempts: [] }, changed: true };
+    d = { ...d, version: 2, users: [], userSessions: [], quizAttempts: [] };
+    changed = true;
   }
-  return { data: value, changed: false };
+  if (d && d.version === 2) {
+    d = { ...d, version: 3, friendships: [], activity: [] };
+    changed = true;
+  }
+  return { data: d, changed };
 }
 
 function isData(value: unknown): value is Data {
   const d = value as Data;
   return (
     !!d &&
-    d.version === 2 &&
+    d.version === 3 &&
+    Array.isArray(d.friendships) &&
+    Array.isArray(d.activity) &&
     Array.isArray(d.users) &&
     Array.isArray(d.userSessions) &&
     Array.isArray(d.quizAttempts) &&
