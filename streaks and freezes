@@ -1,0 +1,69 @@
+# BookReads Gamification Şartnamesi — Bölüm 2: Streak, Zaman ve Dondurma
+
+**Sorumlu:** Matematik Ekibi (Streak & Retention Tasarımı)  
+**Tarih:** Hafta 1  
+**Durum:** Taslak / Kodlandı ve Test Edildi  
+**Referans Kod:** `src/gamification/streak_engine.py`  
+**Birim Testler:** `tests/test_streak_engine.py`  
+
+---
+
+## 1. Günlük Streak (Seri) Kuralları
+
+Kullanıcıların her gün düzenli okuma alışkanlığı kazanması için streak mekaniği şu kurallarla işletilir:
+
+- **Günlük Asgari Eşik:** Bir günün "okundu" sayılması ve streak'in ilerlemesi için kullanıcının o gün **en az 10 sayfa** okuma kaydı girmesi şarttır. (1–9 sayfa arası okumalar XP kazandırır fakat streak'i uzatmaz).
+- **Aynı Gün Çoklu Okuma:** Kullanıcı aynı gün içinde 5 kez okuma kaydı girse bile streak o gün için yalnızca **1 artar**.
+- **İlk Okuma:** Sisteme ilk kez okuma kaydı giren kullanıcının streak serisi 1 olarak başlatılır.
+
+---
+
+## 2. Zaman Sınırları ve Gece Kuşu Toleransı (Night-Owl Policy)
+
+Kullanıcıların okuma alışkanlıkları gece saatlerine sarkabildiği için katı 00:00 sınırı yerine esnek bir zaman penceresi tanımlanmıştır:
+
+- **Referans Saat Dilimi:** Türkiye Yerel Saati (UTC+3 / Europe/Istanbul).
+- **Gün Bitiş Toleransı:** Gün resmi olarak 00:00'da bitse de, gece 00:00 – 02:59 arasında yapılan okumalar **önceki güne ait** kabul edilir.
+- *Örnek:* Cuma günü gündüz okumayıp Cumartesi gece 01:30'da 15 sayfa okuyan kullanıcının Cuma streak'i bozulmaz; sistem etkin tarihi otomatik olarak Cuma olarak hesaplar.
+
+---
+
+## 3. Kaçırılan Gün ve Dondurma (Streak Freeze) Mekanizması
+
+Kullanıcının hastalık, sınav veya seyahat gibi zorunlu durumlarda emeğini kaybetmemesi için bir emniyet subabı tasarlanmıştır:
+
+- **Haftalık Freeze Hakkı:** Her kullanıcıya haftalık **1 adet** ücretsiz "Streak Freeze" (Dondurma Jokeri) tanımlanır.
+- **Otomatik Devreye Girme:** Kullanıcı ardışık bir takvim gününde hiç okuma yapmazsa (2 gün ara verilirse):
+  - Eğer `freeze_credits >= 1` ise: 1 kredi düşülür, streak sayısı **kurtarılır ve devam eder**.
+  - Eğer `freeze_credits == 0` ise: Seri bozulur (`BROKEN`) ve sonraki okumada **1'den başlar**.
+- **Kredi Yenilenmesi:** Kullanılmayan freeze hakları birikmez (Maksimum cepte taşınabilir kredi: 1). Kredi her Pazartesi 00:00'da sıfırlanıp 1 olarak yenilenir.
+- **Çoklu Gün Kaybı:** Aralıksız 2 günden fazla okuma yapılmazsa freeze hakkı olsa dahi seri bozulur.
+
+---
+
+## 4. Streak Sadakat Çarpanı (XP Multiplier)
+
+Uzun soluklu serileri ödüllendirmek amacıyla streak uzadıkça okumalardan kazanılan XP'ye çarpan uygulanır:
+
+| Günlük Streak Serisi | XP Çarpanı | Örnek Getiri (20 Sayfa İçin) |
+|---|---|---|
+| **1 – 6 Gün** | 1.0x (Normal) | 20 XP |
+| **7 – 13 Gün** | 1.10x (%10 Bonus) | 22 XP |
+| **14 – 29 Gün** | 1.15x (%15 Bonus) | 23 XP |
+| **30+ Gün** | 1.25x (%25 Bonus) | 25 XP |
+
+---
+
+## 5. PostgreSQL Şeması İçin Alan Önerileri
+
+Bu kuralların veritabanında sağlıklı işletilebilmesi için `users` veya `user_gamification` tablosunda şu alanlar tutulmalıdır:
+- `current_streak` (integer, default 0)
+- `longest_streak` (integer, default 0)
+- `last_reading_date` (date)
+- `streak_freeze_count` (integer, default 1)
+
+---
+
+## 6. Matematiksel Doğrulama & Edge Case Senaryoları
+- **Takvim Geçişleri:** 31 Aralık -> 1 Ocak ve artık yıl (28-29 Şubat) geçişlerinde gün farkı aritmetiği kesintisiz işler.
+- **En Uzun Seri:** Seri bozulsa (`new_streak = 1`) bile kullanıcının ulaştığı `longest_streak` rekoru kalıcı olarak korunur.
